@@ -5116,13 +5116,28 @@ Terminal::beep()
                 m_real_widget->beep();
 }
 
+std::optional<char>
+Terminal::tty_erase_char() const
+{
+        VtePosixFd *posix_fd = pty_posix_fd();
+        if (!posix_fd) {
+                return {};
+        }
+
+        struct termios tio;
+        if (tcgetattr(vte_posix_fd_get_fd(posix_fd), &tio)) {
+                return {};
+        }
+
+        return tio.c_cc[VERASE];
+}
+
 bool
 Terminal::widget_key_press(vte::platform::KeyEvent const& event)
 {
         auto handled = false;
 	char *normal = NULL;
 	gsize normal_length = 0;
-	struct termios tio;
 	gboolean scrolled = FALSE, steal = FALSE, modifier = FALSE,
 		 suppress_alt_esc = FALSE, add_modifiers = FALSE;
 	guint keyval = 0;
@@ -5279,12 +5294,10 @@ Terminal::widget_key_press(vte::platform::KeyEvent const& event)
 				suppress_alt_esc = TRUE;
 				break;
 			case EraseMode::eTTY:
-				if (pty() &&
-				    tcgetattr(vte_posix_fd_get_fd(pty_posix_fd()), &tio) != -1)
-				{
-					normal = g_strdup_printf("%c", tio.c_cc[VERASE]);
-					normal_length = 1;
-				}
+                                if (auto erase = tty_erase_char()) {
+                                        normal = g_strdup_printf("%c", *erase);
+                                        normal_length = 1;
+                                }
 				suppress_alt_esc = FALSE;
 				break;
 			case EraseMode::eAUTO:
@@ -5292,15 +5305,11 @@ Terminal::widget_key_press(vte::platform::KeyEvent const& event)
 #ifndef _POSIX_VDISABLE
 #define _POSIX_VDISABLE '\0'
 #endif
-				if (pty() &&
-				    tcgetattr(vte_posix_fd_get_fd(pty_posix_fd()), &tio) != -1 &&
-				    tio.c_cc[VERASE] != _POSIX_VDISABLE)
-				{
-					normal = g_strdup_printf("%c", tio.c_cc[VERASE]);
+                                auto erase = tty_erase_char();
+				if (erase && *erase != _POSIX_VDISABLE) {
+					normal = g_strdup_printf("%c", *erase);
 					normal_length = 1;
-				}
-				else
-				{
+				} else {
 					normal = g_strdup("");
 					normal_length = 1;
 					suppress_alt_esc = FALSE;
@@ -5329,10 +5338,8 @@ Terminal::widget_key_press(vte::platform::KeyEvent const& event)
 				normal_length = 1;
 				break;
 			case EraseMode::eTTY:
-				if (pty() &&
-				    tcgetattr(vte_posix_fd_get_fd(pty_posix_fd()), &tio) != -1)
-				{
-					normal = g_strdup_printf("%c", tio.c_cc[VERASE]);
+				if (auto erase = tty_erase_char()) {
+					normal = g_strdup_printf("%c", *erase);
 					normal_length = 1;
 				}
 				suppress_alt_esc = FALSE;

@@ -371,6 +371,8 @@ public:
                 }
         }
 
+        std::optional<char> tty_erase_char() const;
+
         void unset_pty(bool notify_widget = true);
         bool set_pty(vte::base::Pty* pty);
 
