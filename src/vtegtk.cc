@@ -3069,7 +3069,7 @@ vte_terminal_class_init(VteTerminalClass *klass)
 /* public API */
 
 /**
- * SECTION: Terminal properties
+ * SECTION: terminal-properties
  * @short_description:
  *
  * A terminal property ("termprop") is a variable in #VteTerminal.  It can be
