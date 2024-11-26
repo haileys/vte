@@ -3776,7 +3776,7 @@ Terminal::child_watch_done(pid_t pid,
                 /* Read and process about 64k synchronously, up to EOF or EAGAIN
                  * or other error, to make sure we consume the child's output.
                  * See https://gitlab.gnome.org/GNOME/vte/-/issues/2627 */
-                pty_io_read(pty()->fd(), G_IO_IN, 65536);
+                pty_io_read(pty_posix_fd(), G_IO_IN, 65536);
                 if (!m_incoming_queue.empty()) {
                         process_incoming();
                 }
@@ -3816,7 +3816,7 @@ Terminal::connect_pty_read()
         _vte_debug_print (VTE_DEBUG_IO, "Adding PTY input source\n");
 
         m_pty_input_source = g_unix_fd_add_full(VTE_CHILD_INPUT_PRIORITY,
-                                                pty()->fd(),
+                                                pty_posix_fd(),
                                                 (GIOCondition)(G_IO_IN | G_IO_PRI | G_IO_HUP | G_IO_ERR),
                                                 (GUnixFDSourceFunc)io_read_cb,
                                                 this,
@@ -3852,13 +3852,13 @@ Terminal::connect_pty_write()
                 return;
 
         /* Do one write. FIXMEchpe why? */
-        if (!pty_io_write (pty()->fd(), G_IO_OUT))
+        if (!pty_io_write (pty_posix_fd(), G_IO_OUT))
                 return;
 
         _vte_debug_print (VTE_DEBUG_IO, "Adding PTY output source\n");
 
         m_pty_output_source = g_unix_fd_add_full(VTE_CHILD_OUTPUT_PRIORITY,
-                                                 pty()->fd(),
+                                                 pty_posix_fd(),
                                                  G_IO_OUT,
                                                  (GUnixFDSourceFunc)io_write_cb,
                                                  this,
@@ -5280,7 +5280,7 @@ Terminal::widget_key_press(vte::platform::KeyEvent const& event)
 				break;
 			case EraseMode::eTTY:
 				if (pty() &&
-				    tcgetattr(pty()->fd(), &tio) != -1)
+				    tcgetattr(pty_posix_fd(), &tio) != -1)
 				{
 					normal = g_strdup_printf("%c", tio.c_cc[VERASE]);
 					normal_length = 1;
@@ -5293,7 +5293,7 @@ Terminal::widget_key_press(vte::platform::KeyEvent const& event)
 #define _POSIX_VDISABLE '\0'
 #endif
 				if (pty() &&
-				    tcgetattr(pty()->fd(), &tio) != -1 &&
+				    tcgetattr(pty_posix_fd(), &tio) != -1 &&
 				    tio.c_cc[VERASE] != _POSIX_VDISABLE)
 				{
 					normal = g_strdup_printf("%c", tio.c_cc[VERASE]);
@@ -5330,7 +5330,7 @@ Terminal::widget_key_press(vte::platform::KeyEvent const& event)
 				break;
 			case EraseMode::eTTY:
 				if (pty() &&
-				    tcgetattr(pty()->fd(), &tio) != -1)
+				    tcgetattr(pty_posix_fd(), &tio) != -1)
 				{
 					normal = g_strdup_printf("%c", tio.c_cc[VERASE]);
 					normal_length = 1;

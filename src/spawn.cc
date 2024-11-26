@@ -410,7 +410,7 @@ SpawnContext::exec(vte::libc::FD& child_report_error_pipe_write,
                 }
         }
 
-        auto peer_fd = pty()->get_peer(true /* cloexec */);
+        auto peer_fd = pty()->get_peer(nullptr /* error */, true /* cloexec */);
         if (peer_fd == -1)
                 return ExecError::GETPTPEER;
 

@@ -71,7 +71,7 @@ struct _VtePty {
 
 struct _VtePtyPrivate {
         vte::base::Pty* pty; /* owned */
-        int foreign_fd; /* foreign FD if  != -1 */
+        int foreign_fd; /* foreign FD if != -1 */
         VtePtyFlags flags;
 };
 
@@ -307,7 +307,12 @@ try
         VtePtyPrivate *priv = pty->priv;
 
         if (priv->foreign_fd != -1) {
-                priv->pty = vte::base::Pty::create_foreign(priv->foreign_fd, priv->flags);
+                VteFd *fd = vte_posix_fd_new(priv->foreign_fd, cancellable, error);
+                if (!fd) {
+                        return FALSE;
+                }
+
+                priv->pty = vte::base::Pty::create_foreign(fd, priv->flags);
                 priv->foreign_fd = -1;
         } else {
                 priv->pty = vte::base::Pty::create(priv->flags);
@@ -562,8 +567,12 @@ int
 vte_pty_get_fd (VtePty *pty) noexcept
 try
 {
-        g_return_val_if_fail(VTE_IS_PTY(pty), FALSE);
-        return IMPL(pty)->fd();
+        g_return_val_if_fail(VTE_IS_PTY(pty), -1);
+
+        VteFd* fd = IMPL(pty)->fd();
+        g_return_val_if_fail(VTE_IS_POSIX_FD(fd), -1);
+
+        return vte_posix_fd_get_fd(VTE_POSIX_FD(fd));
 }
 catch (...)
 {

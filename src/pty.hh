@@ -22,21 +22,23 @@
 #include <gio/gio.h>
 
 #include "vte/vteenums.h"
+#include "vte/vtefd.h"
 
 #include "libc-glue.hh"
+#include "refptr.hh"
 
 namespace vte::base {
 
 class Pty {
 private:
         mutable volatile int m_refcount{1};
-        vte::libc::FD m_pty_fd{};
+        vte::glib::RefPtr<VteFd> m_fd{};
         VtePtyFlags m_flags{VTE_PTY_DEFAULT};
 
 public:
-        constexpr Pty(vte::libc::FD&& fd,
-                      VtePtyFlags flags = VTE_PTY_DEFAULT) noexcept
-                : m_pty_fd{std::move(fd)},
+        Pty(vte::glib::RefPtr<VteFd>&& fd,
+            VtePtyFlags flags = VTE_PTY_DEFAULT) noexcept
+                : m_fd{std::move(fd)},
                   m_flags{flags}
         {
         }
@@ -49,10 +51,10 @@ public:
         Pty* ref() noexcept;
         void unref() noexcept;
 
-        inline constexpr int fd() const noexcept { return m_pty_fd.get(); }
+        inline VteFd* fd() const noexcept { return m_fd.get(); }
         inline constexpr auto flags() const noexcept { return m_flags; }
 
-        int get_peer(bool cloexec = false) const noexcept;
+        int get_peer(GError **error, bool cloexec = false) const noexcept;
 
         void child_setup() const noexcept;
 
@@ -65,7 +67,7 @@ public:
         bool set_utf8(bool utf8) const noexcept;
 
         static Pty* create(VtePtyFlags flags);
-        static Pty* create_foreign(int fd,
+        static Pty* create_foreign(VteFd *fd,
                                    VtePtyFlags flags);
 };
 

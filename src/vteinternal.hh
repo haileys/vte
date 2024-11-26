@@ -19,6 +19,7 @@
 
 /* BEGIN sanity checks */
 
+#include "vte.h"
 #ifndef __EXCEPTIONS
 #error You MUST NOT use -fno-exceptions to build vte! Fix your build; and DO NOT file a bug upstream!
 #endif
@@ -42,6 +43,7 @@
 #endif
 #include "vtedefines.hh"
 #include "vtetypes.hh"
+#include "vtefd.h"
 #include "reaper.hh"
 #include "ring.hh"
 #include "ringview.hh"
@@ -360,6 +362,10 @@ public:
 	/* PTY handling data. */
         vte::base::RefPtr<vte::base::Pty> m_pty{};
         inline constexpr auto& pty() const noexcept { return m_pty; }
+        int pty_posix_fd() const noexcept {
+                VteFd *fd = pty()->fd();
+                return vte_posix_fd_get_fd(VTE_POSIX_FD(fd));
+        }
 
         void unset_pty(bool notify_widget = true);
         bool set_pty(vte::base::Pty* pty);
@@ -1236,10 +1242,10 @@ public:
         void pty_scroll_lock_changed(bool locked);
 
         void pty_channel_eof();
-        bool pty_io_read(int const fd,
+        bool pty_io_read(int fd,
                          GIOCondition const condition,
                          int amount = -1);
-        bool pty_io_write(int const fd,
+        bool pty_io_write(int fd,
                           GIOCondition const condition);
 
         void send_child(std::string_view const& data);
