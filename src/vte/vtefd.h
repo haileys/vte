@@ -20,4 +20,10 @@ struct _VteFdInterface {
     GTypeInterface parent_iface;
 };
 
+#define VTE_TYPE_POSIX_FD vte_posix_fd_get_type()
+G_DECLARE_FINAL_TYPE (VtePosixFd, vte_posix_fd, VTE, POSIX_FD, GObject);
+
+_VTE_PUBLIC
+VteFd *vte_posix_fd_new(int fd) _VTE_CXX_NOEXCEPT;
+
 G_END_DECLS
