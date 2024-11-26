@@ -362,9 +362,13 @@ public:
 	/* PTY handling data. */
         vte::base::RefPtr<vte::base::Pty> m_pty{};
         inline constexpr auto& pty() const noexcept { return m_pty; }
-        int pty_posix_fd() const noexcept {
+        VtePosixFd* pty_posix_fd() const noexcept {
                 VteFd *fd = pty()->fd();
-                return vte_posix_fd_get_fd(VTE_POSIX_FD(fd));
+                if (VTE_IS_POSIX_FD(fd)) {
+                        return VTE_POSIX_FD(fd);
+                } else {
+                        return nullptr;
+                }
         }
 
         void unset_pty(bool notify_widget = true);
