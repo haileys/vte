@@ -20,6 +20,7 @@ libvte_common_public_headers = files(
   'vte.h',
   'vtedeprecated.h',
   'vteenums.h',
+  'vtefd.h',
   'vteglobals.h',
   'vtemacros.h',
   'vtepty.h',

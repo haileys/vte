@@ -26,6 +26,7 @@
 #include "vtemacros.h"
 
 #include "vteenums.h"
+#include "vtefd.h"
 #include "vteglobals.h"
 #include "vtepty.h"
 #include "vteregex.h"

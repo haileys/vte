@@ -251,6 +251,7 @@ libvte_common_sources = cairo_glue_sources + color_sources + config_sources + de
   'utf8.hh',
   'vte.cc',
   'vtedefines.hh',
+  'vtefd.cc',
   'vtegtk.cc',
   'vtegtk.hh',
   'vteinternal.hh',
@@ -299,6 +300,7 @@ endif
 
 libvte_common_doc_sources = files(
   # These file contain gtk-doc comments to be extracted for docs and gir
+  'vtefd.cc',
   'vtegtk.cc',
   'vtepty.cc',
   'vteregex.cc',
